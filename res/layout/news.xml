@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="wrap_content"
+	android:padding="3dip" android:margin="10dip">
+
+	<ImageView android:id="@+id/photo"
+		android:layout_alignParentTop="true" android:src="@drawable/icon"
+		android:scaleType="centerCrop" android:layout_height="wrap_content"
+		android:layout_width="wrap_content" android:padding="3dp" />
+
+	<TextView android:id="@+id/name" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_toRightOf="@id/photo"
+		android:layout_alignParentRight="true" android:layout_alignParentTop="true"
+		android:singleLine="true" android:layout_alignWithParentIfMissing="true"
+		android:text="First_name Second_name" android:textColor="#654321" />
+	<TextView android:id="@+id/news" 
+	    android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:layout_toRightOf="@id/photo"
+		android:layout_below="@id/name" 
+		android:layout_alignParentRight="true" 
+		android:layout_alignWithParentIfMissing="true"
+		android:text="Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения" />
+
+	<TextView android:id="@+id/time_ago" 
+	    android:layout_width="fill_parent"
+		android:layout_height="26dip" 
+		android:layout_toRightOf="@id/photo"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentRight="true" 
+		android:singleLine="true"
+		android:layout_below="@id/news" 
+		android:ellipsize="marquee"
+		android:textColor="#334444" 
+		android:text="3 часа назад" />
+</RelativeLayout>
