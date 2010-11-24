@@ -29,7 +29,7 @@ public class Authorization extends Activity {
 		ws.setJavaScriptEnabled(true);
 		ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
 		
-		mWebView.loadUrl(ApiHandler.AUTHORIZATION_URL);
+		mWebView.loadUrl(ApiHandler.AUTHORIZATION_URL); 
 	}
 
 	private class VkNewsClient extends WebViewClient {

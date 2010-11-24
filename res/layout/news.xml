@@ -2,7 +2,7 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent" android:layout_height="wrap_content"
-	android:padding="3dip" android:margin="10dip">
+	android:padding="3dip">
 
 	<ImageView android:id="@+id/photo"
 		android:layout_alignParentTop="true" android:src="@drawable/icon"
