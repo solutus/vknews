@@ -6,7 +6,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 
 import org.json.JSONArray;
@@ -23,7 +22,6 @@ public class NewsItem {
 	Profile profile;
 
 	public class Profile {
-		String photoRec;
 		Bitmap photo;
 		String firstName;
 		String lastName;
@@ -57,7 +55,7 @@ public class NewsItem {
 		
 		@Override
 		public String toString() {
-			return firstName + ":" + lastName + ":" + photoRec;
+			return firstName + ":" + lastName;
 		}
 	}
 
@@ -86,18 +84,35 @@ public class NewsItem {
 		for (int i = 0; i < length; i++) {
 			JSONObject o = arr.getJSONObject(i);
 			text = o.getString("text");
+			Log.i("my", text);
 			String source_id = o.getString("source_id");
-			Log.i("my", source_id);
+//			Log.i("my", source_id);
 			Profile profile = profiles.get(source_id);
-			Log.i("my", profile.toString());
+//			Log.i("my", profile.toString()); 
 			long item_time = Long.parseLong(o.getString("date"));
-			Date d = new Date(System.currentTimeMillis() - item_time);
-			NewsItem n = new NewsItem(text, d.toString(), profile);
+			Log.e("my", "item time: " + item_time);
+			Log.e("my", "cur time: " + System.currentTimeMillis());
+			String date = formatTimeAgo(System.currentTimeMillis()/1000 - item_time);
+			NewsItem n = new NewsItem(text, date, profile);
 			items.add(n);
 		}
 		return items;
 	}
 
+	private String formatTimeAgo(long time){
+		final long DAY = 86400;
+		final long HOUR = 3600;
+		final long MINUTE = 60;
+		Log.e("my", "format time: " + time);
+		long days = time / DAY;
+		time = time % (days * DAY);
+		long hours = time / HOUR;
+		time = time %(hours * HOUR);
+		long minutes = time / MINUTE;
+		
+	    return minutes + " минут /" + hours + " часов /" + days + " дней назад";
+	}
+	
 	private HashMap<String, Profile> getProfiles(JSONObject obj)
 			throws JSONException {
 		HashMap<String, Profile> result = new HashMap<String, NewsItem.Profile>();
@@ -110,7 +125,7 @@ public class NewsItem {
 			String photoRec = o.getString("photo_rec");
 			Profile p = new Profile(firstName, lastName, photoRec);
 			result.put(o.getString("uid"), p);
-			Log.w("my", p.toString());
+//			Log.w("my", p.toString());
 		}
 
 		return result;

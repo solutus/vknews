@@ -27,14 +27,14 @@ public class ApiHandler {
 	private static final int COUNT = 20;
 
 	private static ApiHandler sSelf;
-	//private String expire;
+	// private String expire;
 	private String mid;
 	private String secret;
 	private String sid;
 
 	private ApiHandler(String url) throws JSONException {
 		JSONObject json = new JSONObject(url);
-		//expire = json.getString("expire");
+		// expire = json.getString("expire");
 		mid = json.getString("mid");
 		secret = json.getString("secret");
 		sid = json.getString("sid");
@@ -42,51 +42,57 @@ public class ApiHandler {
 
 	public static void init(String url) throws JSONException {
 		sSelf = new ApiHandler(url);
+		Log.e("my", "init api");
 	}
 
-	public static ArrayList<NewsItem> getData(long endTime) throws ClientProtocolException,
-			IOException, JSONException {
-		String request = createRequest(endTime);
+	public static void clear() {
+		sSelf = null;
+	}
+
+	public static ArrayList<NewsItem> getData(long endTime, long startTime)
+			throws ClientProtocolException, IOException, JSONException {
+		String request = createRequest(endTime, startTime);
 		Log.e("my", "request:");
-		Log.e("my", request);
+		
 		HttpGet g = new HttpGet(request);
 		HttpEntity entity = new DefaultHttpClient().execute(g).getEntity();
 		String response = EntityUtils.toString(entity);
-		Log.e("my", "Response:");
-		Log.e("my", response);
+		Log.e("my", "Response:" + response);
+		
 		return new NewsItem().parse(response);
 	}
 
-	private static String createRequest(long endTime) {
+	private static String createRequest(long endTime, long startTime) {
 		StringBuffer address = new StringBuffer(API_ADDRESS);
 		address.append("?api_id=" + APP_ID);
 		address.append("&count=" + COUNT);
+		address.append("&end_time=" + endTime);
 		address.append("&filters=post");
 		address.append("&format=JSON");
 		address.append("&method=" + GET_NEWS);
 		address.append("&sid=" + sSelf.sid);
-		address.append("&sig=" + getSig(endTime));
-
-		address.append("&end_time=" + endTime);
+		address.append("&sig=" + getSig(endTime, startTime));
+		address.append("&start_time=" + startTime);
+		
 		address.append("&v=3.0");
-		return address.toString(); 
+		Log.e("my", "address: " + address.toString());
+		return address.toString();
 	}
 
-	private static String getSig(long endTime) {
+	private static String getSig(long endTime, long startTime) {
 		StringBuffer s = new StringBuffer(sSelf.mid);
-		s.append("api_id=" + APP_ID);
+		s.append("api_id=" + APP_ID); 
 		s.append("count=20");
 		s.append("end_time=" + endTime);
 		s.append("filters=post");
 		s.append("format=JSON");
 		s.append("method=" + GET_NEWS);
+		s.append("start_time=" + startTime);
 		s.append("v=3.0");
 		s.append(sSelf.secret);
-		Log.e("my", "md5: " + s.toString());
 		return hashMd5(s.toString());
 	}
 
-	
 	/**
 	 * Get Md5 hash.
 	 * 
@@ -96,7 +102,7 @@ public class ApiHandler {
 	 */
 	public static String hashMd5(String input) {
 		if (input == null) {
-			return null;
+			return null; 
 		}
 		try {
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -104,15 +110,13 @@ public class ApiHandler {
 			BigInteger number = new BigInteger(1, messageDigest);
 			String md5 = number.toString(16);
 			while (md5.length() < 32) {
-				//md5 = "0" + md5;
+				// md5 = "0" + md5;
 			}
 			return md5;
 		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
 			return null;
 		}
 	}
-	
-	
-	
 
 }

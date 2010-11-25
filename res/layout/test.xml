@@ -1,0 +1,52 @@
+<linearlayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent" android:background="#81BEF7"
+	android:scrollbars="vertical">
+
+	<linearlayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:id="@+id/buttonlayout" android:orientation="horizontal"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:height="32dp" android:gravity="left|top" android:background="#2B60DE"
+		 >
+
+		<linearlayout xmlns:android="http://schemas.android.com/apk/res/android"
+			android:id="@+id/buttonlayout2" android:orientation="horizontal"
+			android:layout_height="wrap_content" android:gravity="left|center_vertical"
+			android:layout_width="wrap_content" android:layout_gravity="left|center_vertical">
+
+			<textview android:id="@+id/txtTest" android:layout_width="fill_parent"
+				android:layout_height="fill_parent" 
+				android:text="adfd"
+				android:gravity="center_vertical"
+				>
+
+			</textview>
+			<linearlayout xmlns:android="http://schemas.android.com/apk/res/android"
+				android:id="@+id/buttonlayout2" android:orientation="horizontal"
+				android:layout_height="wrap_content" android:gravity="right"
+				android:layout_width="fill_parent" android:layout_gravity="right|center_vertical">
+				<button android:id="@+id/btnSave" android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text="Save"
+					
+					android:height="15dp" android:width="70dp"></button>
+					
+				<button android:id="@+id/btnClear" android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:text="Clear"
+					android:height="15dp" android:width="70dp"></button>
+			</linearlayout>
+
+		</linearlayout>
+
+		<tablelayout android:id="@+id/TableLayout01"
+			android:layout_width="fill_parent" android:layout_height="fill_parent"
+            >
+			<tablerow>
+				<listview android:id="@android:id/list"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"></listview>
+			</tablerow>
+
+		</tablelayout>
+
+	</linearlayout>
+</linearlayout>
