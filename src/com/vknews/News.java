@@ -1,13 +1,13 @@
 package com.vknews;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
+import org.apache.http.client.ClientProtocolException;
 import org.json.JSONException;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -17,6 +17,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -24,16 +26,28 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class News extends ListActivity {
+public class News extends ListActivity{// implements OnScrollListener {
+	private static final long MONTH = 2592000;
+	private static final long DAY = 86400;
+	private static final long HOUR = 3600;
+	private static final long MINUTE = 60;
+	private int mPrevTotalItemCount = 0;
+	private VkNewsAdapter mAdapter;
+	private ListLoader mLoader;
+	private ProgressDialog mProgress;
+	private ArrayList<NewsItem> mNews;
+
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.news_list);
-		new ListLoader().execute();
+		mLoader = new ListLoader();
+		mLoader.execute();
+		//getListView().setOnScrollListener(this);
 		Button logout = (Button) findViewById(R.id.logout);
 		logout.setOnClickListener(new LogOutListener());
-		Log.e("my", "oncreate news"); 
+		Log.e("my", "oncreate news");
 	}
 
 	class LogOutListener implements OnClickListener {
@@ -41,8 +55,8 @@ public class News extends ListActivity {
 		public void onClick(View v) {
 			Intent i = new Intent(News.this, Authorization.class);
 			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			ApiHandler.logout();
 			startActivity(i);
-			//ApiHandler.clear();
 			finish();
 		}
 	}
@@ -53,17 +67,53 @@ public class News extends ListActivity {
 		Toast.makeText(this, selection, Toast.LENGTH_LONG).show();
 	}
 
-	public class ListLoader extends AsyncTask<Void, Void, Void> {
-		ArrayList<NewsItem> mNews;
+	//@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		Log.w("my", "f: " + firstVisibleItem + ": vis: " + visibleItemCount
+				+ " tot:" + totalItemCount + "prev tot: " + mPrevTotalItemCount);
+		if (((firstVisibleItem + visibleItemCount) >= totalItemCount)
+				&& totalItemCount != 0
+		// && totalItemCount != mPrevTotalItemCount
+		) {
+			Log.v("my", "onListEnd, extending list");
+			mPrevTotalItemCount = totalItemCount;
+			Log.e("my", "task cancelled: " + mLoader.isCancelled());
+			mLoader.cancel(true);
+			mLoader = new ListLoader();
+			mLoader.execute();
+		}
+	}
 
+	//@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+	}
+
+	private static String formatTimeAgo(long time) {
+		long days = time / DAY;
+		if (days != 0) {
+			time = time % (days * DAY);
+		}
+
+		long hours = time / HOUR;
+		if (hours != 0) {
+			time = time % (hours * HOUR);
+		}
+
+		long minutes = time / MINUTE;
+		return minutes + " минут /" + hours + " часов /" + days + " дней назад";
+	}
+
+	public class ListLoader extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected void onPostExecute(Void result) {
-			// TODO Auto-generated method stub
 			try {
-				News.this.getListView().setAdapter(
-						new VkNewsAdapter(News.this, R.layout.news, mNews));
-				Toast.makeText(News.this, "Display data...", Toast.LENGTH_LONG)
-						.show();
+				News.this.getListView().setAdapter(mAdapter);
+				if (mProgress.isShowing()) {
+					mProgress.dismiss();
+				}
+				Log.e("my", "onPost task cancelled: " + mLoader.isCancelled());
+				mLoader.cancel(false);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -71,41 +121,56 @@ public class News extends ListActivity {
 
 		@Override
 		protected void onPreExecute() {
-			// TODO Auto-generated method stub
-			Toast.makeText(News.this, "Load data...", Toast.LENGTH_LONG).show();
+			mProgress = ProgressDialog.show(News.this, "Получение данных",
+					"идет загрузка...", true);
 		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				long endTime = System.currentTimeMillis() / 1000;
-				long startTime = System.currentTimeMillis()/1000 - 3600*24*30*5;
-                Log.e("my", "endtime: " + formatTime(endTime*1000) + ":" + endTime);
-                Log.e("my", "starttime: " + formatTime(startTime*1000));
-				mNews = ApiHandler.getData(endTime, startTime);
-				Log.e("my", "length: " + mNews.toArray().length);
+				if (mNews == null) {
+					processNewsInitial();
+				} else {
+					processNews();
+				}
+
+				mPrevTotalItemCount += mNews.size();
+				mAdapter.notifyDataSetChanged();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return null;
 		}
 
+		private void processNewsInitial() throws ClientProtocolException,
+				IOException, JSONException {
+			Log.i("my", "processNewsInitial");
+			long lastTime = System.currentTimeMillis() / 1000;
+			mAdapter = new VkNewsAdapter(News.this, R.layout.news, mNews);
+			long startTime = lastTime - MONTH;
+			mNews = ApiHandler.getData(lastTime, startTime);
+			mAdapter = new VkNewsAdapter(News.this, R.layout.news, mNews);
+		}
+
+		private void processNews() throws ClientProtocolException, IOException,
+				JSONException {
+			// TODO Auto-generated method stub
+			Log.i("my", "processNews");
+			long lastTime = mNews.get(mPrevTotalItemCount - 1).date;
+			long startTime = lastTime - MONTH;
+
+			mNews = ApiHandler.getData(lastTime, startTime);
+			Log.i("my", "items before: " + mAdapter.getCount());
+			for (NewsItem n : mNews) {
+				mAdapter.add(n);
+			}
+			Log.i("my", "items after: " + mAdapter.getCount());
+		}
 	}
 
-    public synchronized static String formatTime(long time) {
-		SimpleDateFormat sFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        StringBuilder fullTime = new StringBuilder();
-        fullTime.append(sFormatter.format(new Date(time))).insert((fullTime.length() - 2), ":");
-        return fullTime.toString();
-    }
-
-	
-	public class VkNewsAdapter extends ArrayAdapter<NewsItem> {
-		ArrayList<NewsItem> mNews;
+	private class VkNewsAdapter extends ArrayAdapter<NewsItem> {
 
 		public VkNewsAdapter(Context context, int textViewResourceId,
 				ArrayList<NewsItem> news) {
@@ -130,11 +195,17 @@ public class News extends ListActivity {
 			newsText.setText(news.text);
 
 			TextView timeAgo = (TextView) row.findViewById(R.id.time_ago);
-			timeAgo.setText(news.date);
+			String date = formatTimeAgo(System.currentTimeMillis() / 1000
+					- news.date);
+			timeAgo.setText(date);
 
 			ImageView icon = (ImageView) row.findViewById(R.id.photo);
 			icon.setImageBitmap(profile.photo);
 
+			if (position == getCount() - 1) {
+				new ListLoader().execute();
+			}
+			
 			return row;
 		}
 	}

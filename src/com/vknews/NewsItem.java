@@ -18,7 +18,7 @@ import android.util.Log;
 
 public class NewsItem {
 	String text;
-	String date;
+	long date;
 	Profile profile;
 
 	public class Profile {
@@ -38,7 +38,7 @@ public class NewsItem {
 			bmOptions.inSampleSize = 1;
 			return loadImage(imageUrl, bmOptions);
 		}
-		
+
 		private Bitmap loadImage(String url, BitmapFactory.Options options) {
 			Bitmap bitmap = null;
 			InputStream in = null;
@@ -52,7 +52,6 @@ public class NewsItem {
 			return bitmap;
 		}
 
-		
 		@Override
 		public String toString() {
 			return firstName + ":" + lastName;
@@ -62,7 +61,7 @@ public class NewsItem {
 	public NewsItem() {
 	}
 
-	public NewsItem(String text, String date, Profile p) {
+	public NewsItem(String text, long date, Profile p) {
 		this.text = text;
 		this.date = date;
 		this.profile = p;
@@ -80,43 +79,23 @@ public class NewsItem {
 		ArrayList<NewsItem> items = new ArrayList<NewsItem>();
 		JSONArray arr = params.getJSONArray("items");
 		int length = arr.length();
-        Log.e("my", "length: " + length);
+		Log.e("my", "length: " + length);
 		for (int i = 0; i < length; i++) {
 			JSONObject o = arr.getJSONObject(i);
 			text = o.getString("text");
-			Log.i("my", text);
 			String source_id = o.getString("source_id");
-//			Log.i("my", source_id);
 			Profile profile = profiles.get(source_id);
-//			Log.i("my", profile.toString()); 
 			long item_time = Long.parseLong(o.getString("date"));
-			Log.e("my", "item time: " + item_time);
-			Log.e("my", "cur time: " + System.currentTimeMillis());
-			String date = formatTimeAgo(System.currentTimeMillis()/1000 - item_time);
-			NewsItem n = new NewsItem(text, date, profile);
+			NewsItem n = new NewsItem(text, item_time, profile);
 			items.add(n);
 		}
 		return items;
 	}
 
-	private String formatTimeAgo(long time){
-		final long DAY = 86400;
-		final long HOUR = 3600;
-		final long MINUTE = 60;
-		Log.e("my", "format time: " + time);
-		long days = time / DAY;
-		time = time % (days * DAY);
-		long hours = time / HOUR;
-		time = time %(hours * HOUR);
-		long minutes = time / MINUTE;
-		
-	    return minutes + " минут /" + hours + " часов /" + days + " дней назад";
-	}
-	
 	private HashMap<String, Profile> getProfiles(JSONObject obj)
 			throws JSONException {
 		HashMap<String, Profile> result = new HashMap<String, NewsItem.Profile>();
-		JSONArray arr = obj.getJSONArray("profiles"); 
+		JSONArray arr = obj.getJSONArray("profiles");
 		int length = arr.length();
 		for (int i = 0; i < length; i++) {
 			JSONObject o = arr.getJSONObject(i);
@@ -125,12 +104,12 @@ public class NewsItem {
 			String photoRec = o.getString("photo_rec");
 			Profile p = new Profile(firstName, lastName, photoRec);
 			result.put(o.getString("uid"), p);
-//			Log.w("my", p.toString());
+			// Log.w("my", p.toString());
 		}
 
 		return result;
 	}
-	
+
 	private InputStream openHttpConnection(String strURL) throws IOException {
 		InputStream inputStream = null;
 		URL url = new URL(strURL);

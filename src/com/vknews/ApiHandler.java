@@ -14,17 +14,17 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.util.Log;
+import android.webkit.CookieManager;
 
 public class ApiHandler {
 	public static final String SUCCESS_LOGIN_ADDRESS = "http://vkontakte.ru/api/login_success.html#session=";
 	public static final String APP_ID = "2021752";
 	public static final String API_ADDRESS = "http://api.vkontakte.ru/api.php";
 	public static final String GET_NEWS = "newsfeed.get";
-	public static final String AUTHORIZATION_URL = "http://vkontakte.ru/login.php?&layout=touch&type=browser&settings=8192&app="
+	public static final String AUTHORIZATION_URL = "http://vkontakte.ru/login.php?layout=touch&type=browser&settings=8192&app="
 			+ ApiHandler.APP_ID;
 
-	private static final int COUNT = 20;
+	//private static final int COUNT = 20;
 
 	private static ApiHandler sSelf;
 	// private String expire;
@@ -42,7 +42,7 @@ public class ApiHandler {
 
 	public static void init(String url) throws JSONException {
 		sSelf = new ApiHandler(url);
-		Log.e("my", "init api");
+		//Log.e("my", "init api");
 	}
 
 	public static void clear() {
@@ -52,12 +52,12 @@ public class ApiHandler {
 	public static ArrayList<NewsItem> getData(long endTime, long startTime)
 			throws ClientProtocolException, IOException, JSONException {
 		String request = createRequest(endTime, startTime);
-		Log.e("my", "request:");
+		//Log.e("my", "request:");
 		
 		HttpGet g = new HttpGet(request);
 		HttpEntity entity = new DefaultHttpClient().execute(g).getEntity();
 		String response = EntityUtils.toString(entity);
-		Log.e("my", "Response:" + response);
+		//Log.e("my", "Response:" + response);
 		
 		return new NewsItem().parse(response);
 	}
@@ -65,24 +65,24 @@ public class ApiHandler {
 	private static String createRequest(long endTime, long startTime) {
 		StringBuffer address = new StringBuffer(API_ADDRESS);
 		address.append("?api_id=" + APP_ID);
-		address.append("&count=" + COUNT);
+//		address.append("&count=" + COUNT);
 		address.append("&end_time=" + endTime);
 		address.append("&filters=post");
 		address.append("&format=JSON");
 		address.append("&method=" + GET_NEWS);
-		address.append("&sid=" + sSelf.sid);
 		address.append("&sig=" + getSig(endTime, startTime));
+		address.append("&sid=" + sSelf.sid);
 		address.append("&start_time=" + startTime);
 		
 		address.append("&v=3.0");
-		Log.e("my", "address: " + address.toString());
+		//Log.e("my", "address: " + address.toString());
 		return address.toString();
 	}
 
 	private static String getSig(long endTime, long startTime) {
 		StringBuffer s = new StringBuffer(sSelf.mid);
 		s.append("api_id=" + APP_ID); 
-		s.append("count=20");
+//		s.append("count=20");
 		s.append("end_time=" + endTime);
 		s.append("filters=post");
 		s.append("format=JSON");
@@ -117,6 +117,10 @@ public class ApiHandler {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public static void logout(){
+		CookieManager.getInstance().removeAllCookie();
 	}
 
 }
