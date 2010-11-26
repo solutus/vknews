@@ -5,4 +5,7 @@
     <string name="aaa">aaa</string>
     <string name="bbb">bbb</string>
     <string name="ccc">ccc</string>
+    <string name="get_data">получение данных</string>
+    <string name="loading">идет загрузка...</string>
+    <string name="authorization">авторизация</string>
 </resources>

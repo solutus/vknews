@@ -76,20 +76,21 @@ public class News extends ListActivity implements OnScrollListener {
 		getListView().setOnScrollListener(this);
 		Button logout = (Button) findViewById(R.id.logout);
 		logout.setOnClickListener(new LogOutListener());
-		  Log.e("my", "onCreate");
+		Log.e("my", "onCreate");
 	}
 
 	@Override
 	protected void onRestart() {
-	    Log.e("my", "onRestart");
+		Log.e("my", "onRestart");
 		super.onRestart();
 	}
-	
+
 	@Override
 	protected void onResume() {
-		   Log.e("my", "onResume");
+		Log.e("my", "onResume");
 		super.onResume();
 	}
+
 	/**
 	 * Process logout button click.
 	 */
@@ -121,8 +122,7 @@ public class News extends ListActivity implements OnScrollListener {
 	}
 
 	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {
-	}
+	public void onScrollStateChanged(AbsListView view, int scrollState) {}
 
 	/**
 	 * Intended for debug purposes.
@@ -142,10 +142,9 @@ public class News extends ListActivity implements OnScrollListener {
 		 */
 		@Override
 		protected void onPostExecute(Void result) {
-			News.this.getListView().setAdapter(mAdapter);
-//			if (mProgress.isShowing()) {
-//				mProgress.dismiss();
-//			}
+			if (mProgress.isShowing()) {
+				mProgress.dismiss();
+			}
 		}
 
 		/**
@@ -153,8 +152,8 @@ public class News extends ListActivity implements OnScrollListener {
 		 */
 		@Override
 		protected void onPreExecute() {
-//			mProgress = ProgressDialog.show(News.this, "Получение данных",
-//					"идет загрузка...", true);
+			 mProgress = ProgressDialog.show(News.this, getString(R.string.get_data),
+			 getString(R.string.loading), true);
 		}
 
 		/**
@@ -185,9 +184,7 @@ public class News extends ListActivity implements OnScrollListener {
 		 */
 		private void processNewsInitial() throws ClientProtocolException,
 				IOException, JSONException {
-			Log.i("my", "processNewsInitial");
 			long lastTime = System.currentTimeMillis() / 1000;
-
 			long startTime = lastTime - Utils.MONTH;
 			mNews = ApiHandler.getData(lastTime, startTime);
 			mHandler.sendEmptyMessage(CREATE_LIST);
@@ -203,7 +200,6 @@ public class News extends ListActivity implements OnScrollListener {
 		private void processNews() throws ClientProtocolException, IOException,
 				JSONException {
 
-			Log.i("my", "processNews");
 			long lastTime = mAdapter.getItem(mCount - 1).date;
 			long startTime = lastTime - Utils.MONTH;
 
@@ -218,7 +214,6 @@ public class News extends ListActivity implements OnScrollListener {
 	 * News list Adapter
 	 */
 	private class VkNewsAdapter extends ArrayAdapter<NewsItem> {
-
 		/**
 		 * Constructor
 		 * 
@@ -243,6 +238,7 @@ public class News extends ListActivity implements OnScrollListener {
 			}
 
 			NewsItem news = mAdapter.getItem(position);
+
 			NewsItem.Profile profile = news.profile;
 			TextView nameText = (TextView) row.findViewById(R.id.name);
 			nameText.setText(profile.firstName + " " + profile.lastName);
@@ -257,7 +253,7 @@ public class News extends ListActivity implements OnScrollListener {
 
 			ImageView icon = (ImageView) row.findViewById(R.id.photo);
 			icon.setImageBitmap(profile.photo);
-
+            
 			return row;
 		}
 	}
@@ -273,25 +269,15 @@ public class News extends ListActivity implements OnScrollListener {
 		 */
 		@Override
 		public void handleMessage(Message msg) {
-			Log.e("my", "Handler: " + msg.what);
 			if (msg.what == CREATE_LIST) {
 				mAdapter = new VkNewsAdapter(News.this, R.layout.news, mNews);
+				getListView().setAdapter(mAdapter);
 			} else if (msg.what == UPDATE_LIST) {
 				for (NewsItem n : mNews) {
 					mAdapter.add(n);
 				}
 			}
-			Log.i("my", "items after: " + mAdapter.getCount());
-			int oldCount = mCount - 1;
 			mCount = mAdapter.getCount();
-
-			mAdapter.notifyDataSetChanged();
-
-			ListView lv = getListView();
-			Log.e("my", "count: " + oldCount);
-			// lv.setSelection(oldCount);
-			// lv.invalidate();
-
 		}
 	}
 

@@ -71,7 +71,7 @@ public class NewsItem {
 		public Profile(String firstName, String lastName, String photoRec) {
 			this.firstName = firstName;
 			this.lastName = lastName;
-			this.photo = loadBitmap(photoRec);
+			this.photo = loadBitmap(photoRec); 
 		}
 
 		/**
@@ -105,6 +105,7 @@ public class NewsItem {
 			return bitmap;
 		}
 
+		
 	}
 
 	/**

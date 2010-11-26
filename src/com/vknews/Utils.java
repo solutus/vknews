@@ -3,9 +3,10 @@ package com.vknews;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
+/**
+ * Utility class
+ */
 public class Utils {
-    public final static String LOADING_MESSAGE = "идет загрузка...";
     
 	/**
 	 * Seconds in month

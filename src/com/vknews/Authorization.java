@@ -14,7 +14,6 @@ import android.webkit.WebViewClient;
 public class Authorization extends Activity {
 	private WebView mWebView;
 	private ProgressDialog mProgress;
-    private final static String AUTHORIZATION_MESSAGE = "Авторизация";
 
 	
 	/** Called when the activity is first created. */
@@ -29,8 +28,8 @@ public class Authorization extends Activity {
 		WebSettings ws = mWebView.getSettings();
 		ws.setJavaScriptEnabled(true);
 		
-		mProgress = ProgressDialog.show(this, AUTHORIZATION_MESSAGE,
-				Utils.LOADING_MESSAGE, true);
+		mProgress = ProgressDialog.show(this, getString(R.string.authorization),
+				getString(R.string.loading), true);
 		mWebView.loadUrl(ApiHandler.AUTHORIZATION_URL);
 	}
 
