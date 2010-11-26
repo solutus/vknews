@@ -3,10 +3,10 @@
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
 	
-	<Button android:id="@+id/logout" android:text="logout"
+	<Button android:id="@+id/logout" android:text="выйти"
 		android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
-	<Button android:id="@+id/update" android:text="update"
+	<Button android:id="@+id/update" android:text="обновить"
 		android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_toRightOf="@id/logout"/>
 		
 	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
