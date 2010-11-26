@@ -55,7 +55,7 @@ public class ApiHandler {
 	/**
 	 * Max size of records for one request
 	 */
-	private static final int COUNT = 10;
+	private static final int COUNT = 15;
 
 	/**
 	 * Singleton instance

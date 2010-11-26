@@ -17,7 +17,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -58,7 +57,7 @@ public class News extends ListActivity implements OnScrollListener {
 	 */
 	private ProgressDialog mProgress;
 	/**
-	 * List of news
+	 * Use synchronized getNews() for access
 	 */
 	private ArrayList<NewsItem> mNews;
 	/**
@@ -72,39 +71,45 @@ public class News extends ListActivity implements OnScrollListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.news_list);
 
-		new ListLoader().execute();
+		new ListLoader().execute(); // initial loading
 		getListView().setOnScrollListener(this);
 		Button logout = (Button) findViewById(R.id.logout);
-		logout.setOnClickListener(new LogOutListener());
-		Log.e("my", "onCreate");
-	}
-
-	@Override
-	protected void onRestart() {
-		Log.e("my", "onRestart");
-		super.onRestart();
-	}
-
-	@Override
-	protected void onResume() {
-		Log.e("my", "onResume");
-		super.onResume();
+		logout.setOnClickListener(new ButtonListener());
+		Button update = (Button) findViewById(R.id.update);
+		update.setOnClickListener(new ButtonListener());
+		
 	}
 
 	/**
 	 * Process logout button click.
 	 */
-	class LogOutListener implements OnClickListener {
+	class ButtonListener implements OnClickListener {
 		/**
 		 * Process logout button click.
 		 */
 		@Override
 		public void onClick(View v) {
+			switch(v.getId()){
+			case R.id.logout:
+				logout();
+				break;
+			case R.id.update:
+				update();
+			}
+			
+		}
+		
+		private void logout(){
 			Intent i = new Intent(News.this, Authorization.class);
 			i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			ApiHandler.logout();
 			startActivity(i);
 			finish();
+		}
+		
+		private void update(){
+			setNews(null);
+			new ListLoader().execute(); // initial loading
 		}
 	}
 
@@ -122,7 +127,8 @@ public class News extends ListActivity implements OnScrollListener {
 	}
 
 	@Override
-	public void onScrollStateChanged(AbsListView view, int scrollState) {}
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+	}
 
 	/**
 	 * Intended for debug purposes.
@@ -131,6 +137,14 @@ public class News extends ListActivity implements OnScrollListener {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		String selection = l.getItemAtPosition(position).toString();
 		Toast.makeText(this, selection, Toast.LENGTH_LONG).show();
+	}
+
+	private synchronized ArrayList<NewsItem> getNews() {
+		return mNews;
+	}
+
+	private synchronized void setNews(ArrayList<NewsItem> news) {
+		mNews = news;
 	}
 
 	/**
@@ -152,8 +166,11 @@ public class News extends ListActivity implements OnScrollListener {
 		 */
 		@Override
 		protected void onPreExecute() {
-			 mProgress = ProgressDialog.show(News.this, getString(R.string.get_data),
-			 getString(R.string.loading), true);
+			if (mProgress == null || !mProgress.isShowing()) {
+				mProgress = ProgressDialog.show(News.this,
+						getString(R.string.get_data),
+						getString(R.string.loading), true);
+			}
 		}
 
 		/**
@@ -162,7 +179,7 @@ public class News extends ListActivity implements OnScrollListener {
 		@Override
 		protected Void doInBackground(Void... params) {
 			try {
-				if (mNews == null) {
+				if (getNews() == null) {
 					processNewsInitial();
 				} else {
 					processNews();
@@ -182,11 +199,11 @@ public class News extends ListActivity implements OnScrollListener {
 		 * @throws IOException
 		 * @throws JSONException
 		 */
-		private void processNewsInitial() throws ClientProtocolException,
-				IOException, JSONException {
+		private synchronized void processNewsInitial()
+				throws ClientProtocolException, IOException, JSONException {
 			long lastTime = System.currentTimeMillis() / 1000;
 			long startTime = lastTime - Utils.MONTH;
-			mNews = ApiHandler.getData(lastTime, startTime);
+			setNews(ApiHandler.getData(lastTime, startTime));
 			mHandler.sendEmptyMessage(CREATE_LIST);
 		}
 
@@ -197,16 +214,14 @@ public class News extends ListActivity implements OnScrollListener {
 		 * @throws IOException
 		 * @throws JSONException
 		 */
-		private void processNews() throws ClientProtocolException, IOException,
-				JSONException {
+		private synchronized void processNews() throws ClientProtocolException,
+				IOException, JSONException {
 
 			long lastTime = mAdapter.getItem(mCount - 1).date;
 			long startTime = lastTime - Utils.MONTH;
 
-			mNews = ApiHandler.getData(lastTime, startTime);
-			Log.i("my", "items before: " + mAdapter.getCount());
+			setNews(ApiHandler.getData(lastTime, startTime));
 			mHandler.sendEmptyMessage(UPDATE_LIST);
-
 		}
 	}
 
@@ -253,7 +268,7 @@ public class News extends ListActivity implements OnScrollListener {
 
 			ImageView icon = (ImageView) row.findViewById(R.id.photo);
 			icon.setImageBitmap(profile.photo);
-            
+
 			return row;
 		}
 	}
@@ -270,10 +285,11 @@ public class News extends ListActivity implements OnScrollListener {
 		@Override
 		public void handleMessage(Message msg) {
 			if (msg.what == CREATE_LIST) {
-				mAdapter = new VkNewsAdapter(News.this, R.layout.news, mNews);
+				mAdapter = new VkNewsAdapter(News.this, R.layout.news,
+						getNews());
 				getListView().setAdapter(mAdapter);
 			} else if (msg.what == UPDATE_LIST) {
-				for (NewsItem n : mNews) {
+				for (NewsItem n : getNews()) {
 					mAdapter.add(n);
 				}
 			}
