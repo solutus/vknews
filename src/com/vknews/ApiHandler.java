@@ -1,10 +1,8 @@
 package com.vknews;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -17,21 +15,57 @@ import org.json.JSONObject;
 import android.webkit.CookieManager;
 
 public class ApiHandler {
+	/**
+	 * Redirects to this URL if login is success.
+	 */
 	public static final String SUCCESS_LOGIN_ADDRESS = "http://vkontakte.ru/api/login_success.html#session=";
+	/**
+	 * Appication Id 
+	 */
 	public static final String APP_ID = "2021752";
+	/**
+	 * Vkontakte API address
+	 */
 	public static final String API_ADDRESS = "http://api.vkontakte.ru/api.php";
+	/**
+	 * API Function
+	 */
 	public static final String GET_NEWS = "newsfeed.get";
+	/** 
+	 * Login url
+	 */
 	public static final String AUTHORIZATION_URL = "http://vkontakte.ru/login.php?layout=touch&type=browser&settings=8192&app="
 			+ ApiHandler.APP_ID;
 
-	//private static final int COUNT = 20;
+	/**
+	 * Max size of records for one request
+	 */
+	private static final int COUNT = 20;
 
+	/**
+	 * Singleton instance
+	 */
 	private static ApiHandler sSelf;
+	
 	// private String expire;
+	/**
+	 * Vkontakte User id
+	 */
 	private String mid;
+	/**
+	 * Secret code 
+	 */
 	private String secret;
+	/**
+	 * Session id 
+	 */
 	private String sid;
 
+	/**
+	 * Private constructor
+	 * @param url
+	 * @throws JSONException
+	 */
 	private ApiHandler(String url) throws JSONException {
 		JSONObject json = new JSONObject(url);
 		// expire = json.getString("expire");
@@ -40,85 +74,89 @@ public class ApiHandler {
 		sid = json.getString("sid");
 	}
 
+    /**
+     * Set necessary data to singleton	
+     * @param url
+     * @throws JSONException
+     */
 	public static void init(String url) throws JSONException {
 		sSelf = new ApiHandler(url);
-		//Log.e("my", "init api");
 	}
 
-	public static void clear() {
-		sSelf = null;
-	}
-
+    /**
+     * Return fetched data from vkontakte api url
+     * @param endTime
+     * @param startTime
+     * @return
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws JSONException
+     */
 	public static ArrayList<NewsItem> getData(long endTime, long startTime)
 			throws ClientProtocolException, IOException, JSONException {
 		String request = createRequest(endTime, startTime);
-		//Log.e("my", "request:");
-		
 		HttpGet g = new HttpGet(request);
 		HttpEntity entity = new DefaultHttpClient().execute(g).getEntity();
 		String response = EntityUtils.toString(entity);
-		//Log.e("my", "Response:" + response);
 		
 		return new NewsItem().parse(response);
 	}
 
+	/**
+	 * Creates request URL
+	 * @param endTime
+	 * @param startTime
+	 * @return
+	 */
 	private static String createRequest(long endTime, long startTime) {
 		StringBuffer address = new StringBuffer(API_ADDRESS);
-		address.append("?api_id=" + APP_ID);
-//		address.append("&count=" + COUNT);
-		address.append("&end_time=" + endTime);
-		address.append("&filters=post");
-		address.append("&format=JSON");
-		address.append("&method=" + GET_NEWS);
-		address.append("&sig=" + getSig(endTime, startTime));
-		address.append("&sid=" + sSelf.sid);
-		address.append("&start_time=" + startTime);
+		ArrayList<String>params = createParams( endTime, startTime);
+		int length = params.size();
+		for(int i=0; i<length; i++){
+			String s = params.get(i);
+			if(i==0){
+				address.append("?" + s);	
+			}
+			address.append("&" + s);
+		}
 		
-		address.append("&v=3.0");
-		//Log.e("my", "address: " + address.toString());
+		address.append("&sig=" + getSig(params));
+		address.append("&sid=" + sSelf.sid);
 		return address.toString();
 	}
 
-	private static String getSig(long endTime, long startTime) {
+	/**
+	 * Composes signature
+	 * @param endTime
+	 * @param startTime
+	 * @return
+	 */
+	private static String getSig(ArrayList<String>params){//long endTime, long startTime) {
 		StringBuffer s = new StringBuffer(sSelf.mid);
-		s.append("api_id=" + APP_ID); 
-//		s.append("count=20");
-		s.append("end_time=" + endTime);
-		s.append("filters=post");
-		s.append("format=JSON");
-		s.append("method=" + GET_NEWS);
-		s.append("start_time=" + startTime);
-		s.append("v=3.0");
+		for(String p : params){
+			s.append(p);
+		}
 		s.append(sSelf.secret);
-		return hashMd5(s.toString());
+		return Utils.hashMd5(s.toString());
+	}
+	
+	private static ArrayList<String>createParams(long endTime, long startTime){
+		ArrayList<String> params = new ArrayList<String>();
+		params.add("api_id=" + APP_ID);
+		params.add("count="+ COUNT);
+		params.add("end_time=" + endTime);
+		params.add("filters=post");
+		params.add("format=JSON");
+		params.add("method=" + GET_NEWS);
+		params.add("start_time=" + startTime);
+		params.add("v=3.0");
+		Collections.sort(params);
+		return params;
 	}
 
 	/**
-	 * Get Md5 hash.
-	 * 
-	 * @param input
-	 *            Input string.
-	 * @return hash string.
+	 * Clear session data
 	 */
-	public static String hashMd5(String input) {
-		if (input == null) {
-			return null; 
-		}
-		try {
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			byte[] messageDigest = md.digest(input.getBytes());
-			BigInteger number = new BigInteger(1, messageDigest);
-			String md5 = number.toString(16);
-			while (md5.length() < 32) {
-				// md5 = "0" + md5;
-			}
-			return md5;
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 	public static void logout(){
 		CookieManager.getInstance().removeAllCookie();
 	}
