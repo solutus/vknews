@@ -76,8 +76,20 @@ public class News extends ListActivity implements OnScrollListener {
 		getListView().setOnScrollListener(this);
 		Button logout = (Button) findViewById(R.id.logout);
 		logout.setOnClickListener(new LogOutListener());
+		  Log.e("my", "onCreate");
 	}
 
+	@Override
+	protected void onRestart() {
+	    Log.e("my", "onRestart");
+		super.onRestart();
+	}
+	
+	@Override
+	protected void onResume() {
+		   Log.e("my", "onResume");
+		super.onResume();
+	}
 	/**
 	 * Process logout button click.
 	 */
@@ -131,9 +143,9 @@ public class News extends ListActivity implements OnScrollListener {
 		@Override
 		protected void onPostExecute(Void result) {
 			News.this.getListView().setAdapter(mAdapter);
-			if (mProgress.isShowing()) {
-				mProgress.dismiss();
-			}
+//			if (mProgress.isShowing()) {
+//				mProgress.dismiss();
+//			}
 		}
 
 		/**
@@ -141,8 +153,8 @@ public class News extends ListActivity implements OnScrollListener {
 		 */
 		@Override
 		protected void onPreExecute() {
-			mProgress = ProgressDialog.show(News.this, "Получение данных",
-					"идет загрузка...", true);
+//			mProgress = ProgressDialog.show(News.this, "Получение данных",
+//					"идет загрузка...", true);
 		}
 
 		/**

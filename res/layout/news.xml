@@ -13,11 +13,12 @@
 		android:layout_alignParentRight="true" android:layout_alignParentTop="true"
 		android:singleLine="true" android:layout_alignWithParentIfMissing="true"
 		android:text="First_name Second_name" android:textColor="#654321" />
+		
 	<TextView android:id="@+id/news" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:layout_toRightOf="@id/photo"
 		android:layout_below="@id/name" android:layout_alignParentRight="true"
 		android:layout_alignWithParentIfMissing="true"
-		android:text="Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения Текст сообщения" />
+		android:text="Текст сообщения" />
 
 	<TextView android:id="@+id/time_ago" android:layout_width="fill_parent"
 		android:layout_height="26dip" android:layout_toRightOf="@id/photo"

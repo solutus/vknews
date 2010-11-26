@@ -15,6 +15,21 @@ import org.json.JSONObject;
 import android.webkit.CookieManager;
 
 public class ApiHandler {
+	
+	/**
+	 * URL params keys
+	 */
+	private static final String APP_ID_KEY = "api_id";
+	private static final String COUNT_KEY = "count";
+	private static final String END_TIME_KEY = "end_time";
+	private static final String FILTERS_KEY = "filters";
+	private static final String FORMAT_KEY = "format";
+	private static final String METHOD_KEY = "method";
+	private static final String START_TIME_KEY = "start_time";
+	private static final String VERSION_KEY = "v";
+	private static final String SID_KEY = "sid";
+	private static final String SIG_KEY = "sig";
+	
 	/**
 	 * Redirects to this URL if login is success.
 	 */
@@ -120,8 +135,8 @@ public class ApiHandler {
 			address.append("&" + s);
 		}
 		
-		address.append("&sig=" + getSig(params));
-		address.append("&sid=" + sSelf.sid);
+		address.append("&" + SIG_KEY + "=" + getSig(params));
+		address.append("&" + SID_KEY + "=" + sSelf.sid);
 		return address.toString();
 	}
 
@@ -142,14 +157,14 @@ public class ApiHandler {
 	
 	private static ArrayList<String>createParams(long endTime, long startTime){
 		ArrayList<String> params = new ArrayList<String>();
-		params.add("api_id=" + APP_ID);
-		params.add("count="+ COUNT);
-		params.add("end_time=" + endTime);
-		params.add("filters=post");
-		params.add("format=JSON");
-		params.add("method=" + GET_NEWS);
-		params.add("start_time=" + startTime);
-		params.add("v=3.0");
+		params.add(APP_ID_KEY + "=" + APP_ID);
+		params.add(COUNT_KEY + "="+ COUNT);
+		params.add(END_TIME_KEY + "=" + endTime);
+		params.add(FILTERS_KEY + "=" + "post");
+		params.add(FORMAT_KEY + "=" + "JSON");
+		params.add(METHOD_KEY + "=" + GET_NEWS);
+		params.add(START_TIME_KEY + "=" + startTime);
+		params.add(VERSION_KEY + "=" + "3.0");
 		Collections.sort(params);
 		return params;
 	}

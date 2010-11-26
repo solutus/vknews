@@ -5,6 +5,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Utils {
+    public final static String LOADING_MESSAGE = "идет загрузка...";
+    
 	/**
 	 * Seconds in month
 	 */
@@ -21,7 +23,7 @@ public class Utils {
 	 * Seconds in minute
 	 */
 	public static final long MINUTE = 60;
-	
+
 	/**
 	 * Format time in format n минут / n часов / n дней назад
 	 * 
@@ -42,7 +44,7 @@ public class Utils {
 		long minutes = time / MINUTE;
 		return minutes + " минут /" + hours + " часов /" + days + " дней назад";
 	}
-	
+
 	/**
 	 * Get Md5 hash.
 	 * 
@@ -52,7 +54,7 @@ public class Utils {
 	 */
 	public static String hashMd5(String input) {
 		if (input == null) {
-			return null; 
+			return null;
 		}
 		try {
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -60,7 +62,9 @@ public class Utils {
 			BigInteger number = new BigInteger(1, messageDigest);
 			String md5 = number.toString(16);
 			while (md5.length() < 32) {
-				// md5 = "0" + md5;
+				// if md5 starts since '0' it will not be displayed because it is an integer
+				// therefore it should manually add zeros to 32 digits
+				md5 = "0" + md5; 
 			}
 			return md5;
 		} catch (NoSuchAlgorithmException e) {
@@ -68,6 +72,5 @@ public class Utils {
 			return null;
 		}
 	}
-
 
 }
